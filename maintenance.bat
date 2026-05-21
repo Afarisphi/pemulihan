@@ -1,10 +1,10 @@
 @echo off
-title Monthly Windows Maintenance
+title Safe Windows Maintenance
 color 0A
 
 :: =====================================================
-:: SAFE MONTHLY WINDOWS MAINTENANCE SCRIPT
-:: Optimized for stability and minimal interruption
+:: SAFE WINDOWS MAINTENANCE
+:: Stable - Sequential - Minimal Risk
 :: Run as Administrator
 :: =====================================================
 
@@ -14,148 +14,99 @@ color 0A
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo.
-    echo [ERROR] Please run this script as Administrator.
+    echo Please run this script as Administrator.
     pause
     exit
 )
 
-:: -----------------------------------------------------
-:: SET LOG FILE
-:: -----------------------------------------------------
-set LOGFILE=%~dp0maintenance_log.txt
-
-echo ============================================ >> "%LOGFILE%"
-echo Maintenance Started : %date% %time% >> "%LOGFILE%"
-echo ============================================ >> "%LOGFILE%"
-
 cls
+
 echo ============================================
-echo     WINDOWS MAINTENANCE STARTING
+echo        SAFE WINDOWS MAINTENANCE
 echo ============================================
 echo.
 
 :: -----------------------------------------------------
 :: 1. CLEAN TEMP FILES
 :: -----------------------------------------------------
-echo [1/9] Cleaning Temporary Files...
-echo [1/9] Cleaning Temporary Files... >> "%LOGFILE%"
+echo [1/6] Cleaning Temporary Files...
+echo Please wait...
 
-del /q /f /s "%TEMP%\*" >nul 2>&1
-del /q /f /s "C:\Windows\Temp\*" >nul 2>&1
+del /q /s "%TEMP%\*" >nul 2>&1
+del /q /s "C:\Windows\Temp\*" >nul 2>&1
 
-echo Temporary files cleaned. >> "%LOGFILE%"
-
-:: -----------------------------------------------------
-:: 2. DISK CLEANUP
-:: -----------------------------------------------------
+echo Done.
 echo.
-echo [2/9] Running Disk Cleanup...
-echo [2/9] Running Disk Cleanup... >> "%LOGFILE%"
-
-cleanmgr /verylowdisk >nul 2>&1
-
-echo Disk Cleanup completed. >> "%LOGFILE%"
 
 :: -----------------------------------------------------
-:: 3. FLUSH DNS
+:: 2. FLUSH DNS
 :: -----------------------------------------------------
+echo [2/6] Flushing DNS Cache...
+echo Please wait...
+
+ipconfig /flushdns >nul 2>&1
+
+echo Done.
 echo.
-echo [3/9] Flushing DNS Cache...
-echo [3/9] Flushing DNS Cache... >> "%LOGFILE%"
-
-ipconfig /flushdns >> "%LOGFILE%"
 
 :: -----------------------------------------------------
-:: 4. SYSTEM FILE CHECKER
+:: 3. SYSTEM FILE CHECKER
 :: -----------------------------------------------------
+echo [3/6] Running System File Checker...
+echo This may take several minutes...
+echo Please do not close the window.
+
+sfc /scannow
+
+echo SFC Scan Completed.
 echo.
-echo [4/9] Running System File Checker...
-echo [4/9] Running SFC Scan... >> "%LOGFILE%"
-
-start /wait sfc /scannow
-
-echo SFC completed. >> "%LOGFILE%"
 
 :: -----------------------------------------------------
-:: 5. DISM HEALTH RESTORE
+:: 4. DISM RESTORE HEALTH
 :: -----------------------------------------------------
+echo [4/6] Running DISM RestoreHealth...
+echo This may take several minutes...
+echo Please do not close the window.
+
+DISM /Online /Cleanup-Image /RestoreHealth
+
+echo DISM Completed.
 echo.
-echo [5/9] Running DISM RestoreHealth...
-echo [5/9] Running DISM RestoreHealth... >> "%LOGFILE%"
-
-start /wait DISM /Online /Cleanup-Image /RestoreHealth
-
-echo DISM completed. >> "%LOGFILE%"
 
 :: -----------------------------------------------------
-:: 6. OPTIMIZE DRIVE
+:: 5. OPTIMIZE DRIVE
 :: -----------------------------------------------------
+echo [5/6] Optimizing Drive...
+echo Please wait...
+
+defrag C: /O >nul 2>&1
+
+echo Drive Optimization Completed.
 echo.
-echo [6/9] Optimizing Drive...
-echo [6/9] Optimizing Drive... >> "%LOGFILE%"
-
-defrag C: /O >> "%LOGFILE%"
-
-echo Drive optimization completed. >> "%LOGFILE%"
 
 :: -----------------------------------------------------
-:: 7. WINDOWS DEFENDER QUICK SCAN
+:: 6. MICROSOFT DEFENDER QUICK SCAN
 :: -----------------------------------------------------
-echo.
-echo [7/9] Running Microsoft Defender Quick Scan...
-echo [7/9] Running Defender Scan... >> "%LOGFILE%"
+echo [6/6] Running Microsoft Defender Quick Scan...
+echo Please wait...
 
 powershell -WindowStyle Hidden -Command "Start-MpScan -ScanType QuickScan"
 
-echo Defender scan completed. >> "%LOGFILE%"
-
-:: -----------------------------------------------------
-:: 8. RESTART PRINT SPOOLER
-:: -----------------------------------------------------
+echo Defender Scan Completed.
 echo.
-echo [8/9] Restarting Print Spooler...
-echo [8/9] Restarting Print Spooler... >> "%LOGFILE%"
-
-net stop spooler >nul 2>&1
-timeout /t 2 >nul
-net start spooler >nul 2>&1
-
-echo Print Spooler restarted. >> "%LOGFILE%"
 
 :: -----------------------------------------------------
-:: 9. CHECK DISK HEALTH
+:: FINISHED
 :: -----------------------------------------------------
-echo.
-echo [9/9] Checking Disk Health...
-echo [9/9] Checking Disk Health... >> "%LOGFILE%"
-
-wmic diskdrive get model,status >> "%LOGFILE%"
-
-echo Disk health check completed. >> "%LOGFILE%"
-
-:: -----------------------------------------------------
-:: CLEANUP UNUSED WINDOWS
-:: -----------------------------------------------------
-taskkill /f /im cleanmgr.exe >nul 2>&1
-taskkill /f /im dism.exe >nul 2>&1
-
-:: -----------------------------------------------------
-:: COMPLETE
-:: -----------------------------------------------------
-echo.
 echo ============================================
-echo        MAINTENANCE COMPLETED
+echo         MAINTENANCE COMPLETED
 echo ============================================
 echo.
 
-echo Maintenance Finished : %date% %time% >> "%LOGFILE%"
-echo ============================================ >> "%LOGFILE%"
-
-echo Log saved:
-echo %LOGFILE%
-
+echo All processes finished successfully.
 echo.
-echo PC will shutdown automatically in 60 seconds.
+
+echo PC will shutdown in 60 seconds.
 echo Please save your remaining work.
 
 shutdown /s /t 60
