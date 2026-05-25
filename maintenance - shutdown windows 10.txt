@@ -1,0 +1,59 @@
+@echo off
+title Safe Windows 10 Maintenance
+color 0A
+
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Please run as Administrator.
+    pause
+    exit
+)
+
+cls
+
+echo ============================================
+echo      WINDOWS 10 MAINTENANCE
+echo ============================================
+echo.
+
+echo [1/6] Cleaning Temporary Files...
+del /q /s "%TEMP%\*" >nul 2>&1
+del /q /s "C:\Windows\Temp\*" >nul 2>&1
+echo Done.
+echo.
+
+echo [2/6] Flushing DNS...
+ipconfig /flushdns >nul 2>&1
+echo Done.
+echo.
+
+echo [3/6] Running SFC Scan...
+sfc /scannow
+echo Done.
+echo.
+
+echo [4/6] Running DISM RestoreHealth...
+DISM /Online /Cleanup-Image /RestoreHealth
+echo Done.
+echo.
+
+echo [5/6] Optimizing Drive...
+defrag C: /O >nul 2>&1
+echo Done.
+echo.
+
+echo [6/6] Running Defender Quick Scan...
+powershell -WindowStyle Hidden -Command "Start-MpScan -ScanType QuickScan"
+echo Done.
+echo.
+
+echo ============================================
+echo         MAINTENANCE COMPLETED
+echo ============================================
+echo.
+
+echo Shutdown in 60 seconds...
+shutdown /s /t 60
+
+timeout /t 3 >nul
+exit

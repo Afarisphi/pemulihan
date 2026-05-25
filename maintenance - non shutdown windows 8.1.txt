@@ -1,0 +1,58 @@
+@echo off
+title Safe Windows 8 Maintenance
+color 0A
+
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Please run as Administrator.
+    pause
+    exit
+)
+
+cls
+
+echo ============================================
+echo      WINDOWS 8 MAINTENANCE
+echo ============================================
+echo.
+
+echo [1/5] Cleaning Temporary Files...
+del /q /s "%TEMP%\*" >nul 2>&1
+del /q /s "C:\Windows\Temp\*" >nul 2>&1
+echo Done.
+echo.
+
+echo [2/5] Flushing DNS...
+ipconfig /flushdns >nul 2>&1
+echo Done.
+echo.
+
+echo [3/5] Running SFC Scan...
+sfc /scannow
+echo Done.
+echo.
+
+echo [4/5] Running DISM RestoreHealth...
+DISM /Online /Cleanup-Image /RestoreHealth
+echo Done.
+echo.
+
+echo [5/5] Optimizing Drive...
+defrag C: /O >nul 2>&1
+echo Done.
+echo.
+
+if exist "%ProgramFiles%\Windows Defender\MpCmdRun.exe" (
+    echo Running Defender Quick Scan...
+    "%ProgramFiles%\Windows Defender\MpCmdRun.exe" -Scan -ScanType 1
+    echo Defender Scan Completed.
+)
+
+echo.
+echo ============================================
+echo         MAINTENANCE COMPLETED
+echo ============================================
+echo.
+
+timeout /t 3 >nul
+exit
